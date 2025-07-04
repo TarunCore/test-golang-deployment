@@ -93,7 +93,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		</div>
 
 		<script>
-			let socket = new WebSocket("ws://" + location.host + "/ws");
+			let socket = new WebSocket("wss://" + location.host + "/ws");
 			let chat = document.getElementById("chat");
 
 			socket.onmessage = function(e) {
@@ -131,7 +131,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close()
 
 	clients[ws] = true
-
+	log.Println("Client connected")
 	// Send previous messages
 	mu.Lock()
 	for _, msg := range messages {
@@ -155,6 +155,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 func handleMessages() {
 	for {
 		msg := <-broadcast
+		log.Println("Message received:", msg)
 		for client := range clients {
 			err := client.WriteMessage(websocket.TextMessage, []byte(msg))
 			if err != nil {
